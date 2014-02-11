@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>KVB Status - Powered by Köln API</title>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+    <style type="text/css">
+    .nav-pills li {
+      background-color: #eee;
+    }
+    .table.stationtable td {
+      padding-left: 2px;
+      padding-right: 0px;
+    }
+    .panel-heading.stationspanel {
+      padding-left: 0px;
+    }
+    .panel-body.stationspanel {
+      padding-left: 0px;
+    }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>KVB Status</h1>
+      <p>Ein Service von <a href="http://www.koelnapi.de/">Köln API</a>. Angaben ohne Gewähr. Alle hier gezeigten Meldungen stammen von den Kölner Verkehrsbetrieben (<a href="http://www.kvb-koeln.de/german/home/mofis_bahn.html">Originalseite anzeigen</a>). Aktualisierung alle 5 Minuten.</p>
+
+      <div class="well well-sm"><small>Zuletzt aktualisiert: <span id="lastmod">Wird geladen...</span></small></div>
+
+      <div id="content">
+      </div>
+    </div> <!-- / class=container -->
+    <script src="https://code.jquery.com/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+    <script src="moment.js"></script>
+    <script>
+    $(document).ready(function(){
+      // load messages
+      moment.lang("de");
+      var loadData = function() {
+        var url = "messages.min.json";
+        $.getJSON(url, function(data){
+          //console.log(data);
+          var lastmod = moment(data.last_modified);
+          $("#lastmod").text(lastmod.format("dddd, Do MMMM YYYY, H:mm") + " Uhr (" + lastmod.fromNow() + ")");
+          $("#content").empty();
+          if (data.messages.length == 0) {
+            $("#content").append('<div class="alert alert-success">Aktuell liegen keine Meldungen vor.</div>')
+          } else {
+            // add menu
+            var numDisruptions = 0;
+            var numOther = data.messages.length;
+            var disruptionElement = $('<div id="stoerungen"><h2>Störungen</h2></div>');
+            var otherElement = $('<div id="other"><h2>Sonstige Meldungen</h2></div>');
+            // count disruptions
+            $.each(data.messages, function(i, message){
+              if (message.type == "St\u00f6rungsmeldung") {
+                numDisruptions++;
+                numOther--;
+                // append to container
+                var panel = $('<div class="panel panel-default"></div>');
+                var panelBody = $('<div class="panel-body"><p>'+ message.text +'</p></div>')
+                // affected stations
+                if (message.station_info && message.station_info.length) {
+                  panelBody.append('<div class="panel-heading stationspanel"><a role="button" class="btn btn-default" data-toggle="collapse" href="#collapse'+ i +'">Betroffene Haltestellen <span class="badge">'+ message.station_info.length +'</span></a></div>');
+                  var table = $('<table class="table stationtable"></table>');
+                  $.each(message.station_info, function(s, station_info) {
+                    if (station_info.direction) {
+                      table.append('<tr><td><span class="label label-default">'+ station_info.station +'</span> nach <span class="label label-default">'+ station_info.direction +'</span></td></tr>');
+                    } else {
+                      table.append('<tr><td><span class="label label-default">'+ station_info.station + '</span></td></tr>');
+                    }
+                  });
+                  var collapseInnerContainer = $('<div class="panel-body stationspanel"></div>');
+                  collapseInnerContainer.append(table);
+                  var collapseContainer = $('<div id="collapse'+ i +'" class="panel-collapse collapse"></div>');
+                  collapseContainer.append(collapseInnerContainer);
+                  panelBody.append(collapseContainer);
+                }
+                panel.append(panelBody);
+                disruptionElement.append(panel);
+              } else {
+                var panel = $('<div class="panel panel-default"><div class="panel-body">'+ message.text +'</div></div>');
+                otherElement.append(panel);
+              }
+            });
+            var menu = $('<ul class="nav nav-pills nav-stacked"></ul>');
+            if (numDisruptions) {
+              menu.append('<li><a href="#stoerungen">St\u00f6rungen <span class="badge">'+ numDisruptions +'</span></a></li>');
+            }
+            if (numOther) {
+              menu.append('<li><a href="#other">Sonstige Meldungen <span class="badge">'+ numOther +'</span></a></li>');
+            }
+            $("#content").append(menu);
+            if (numDisruptions) {
+              $("#content").append(disruptionElement);
+            }
+          }
+        });
+      }
+      loadData();
+    });
+    </script>
+  </body>
+</html>
