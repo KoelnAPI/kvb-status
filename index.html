@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>KVB Status - Powered by Köln API</title>
+    <title>KVB Bahn-Status - Powered by Köln API</title>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
     <style type="text/css">
     .nav-pills li {
@@ -24,7 +24,7 @@
   </head>
   <body>
     <div class="container">
-      <h1>KVB Status</h1>
+      <h1>KVB Bahn-Status</h1>
       <p>Ein Service von <a href="http://www.koelnapi.de/">Köln API</a>. Angaben ohne Gewähr. Alle hier gezeigten Meldungen stammen von den Kölner Verkehrsbetrieben (<a href="http://www.kvb-koeln.de/german/home/mofis_bahn.html">Originalseite anzeigen</a>). Aktualisierung alle 5 Minuten.</p>
 
       <div class="well well-sm"><small>Zuletzt aktualisiert: <span id="lastmod">Wird geladen...</span></small></div>
@@ -40,7 +40,7 @@
       // load messages
       moment.lang("de");
       var loadData = function() {
-        var url = "messages.min.json";
+        var url = "messages_bahn.min.json";
         $.getJSON(url, function(data){
           //console.log(data);
           var lastmod = moment(data.last_modified);
