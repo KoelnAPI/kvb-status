@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-    <title>KVB Bahn-Status - Powered by Köln API</title>
-    <meta name="description" content="Aktuelle Meldungen von der KVB zum Bahnverkehr, smartphone-freundlich dargestellt.">
+    <title>KVB Bus-Status - Powered by Köln API</title>
+    <meta name="description" content="Aktuelle Meldungen von der KVB zum Busverkehr, smartphone-freundlich dargestellt.">
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
     <style type="text/css">
     body {
@@ -34,25 +34,25 @@
       <p>Ein Service von <a href="http://www.koelnapi.de/">Köln API</a>. Angaben ohne Gewähr. Alle hier gezeigten Meldungen stammen von den Kölner Verkehrsbetrieben. Aktualisierung alle 5 Minuten.</p>
 
       <ul class="nav nav-tabs" style="margin-top: 10px; margin-bottom: 10px">
-        <li class="active"><a href="./">Bahn</a></li>
-        <li><a href="/bus/">Bus</a></li>
+        <li><a href="../">Bahn</a></li>
+        <li class="active"><a href="./">Bus</a></li>
       </ul>
 
       <div class="well well-sm"><small>Zuletzt aktualisiert: <span id="lastmod">Wird geladen...</span></small></div>
 
       <div id="content"></div>
 
-      <p><a href="http://www.kvb-koeln.de/german/home/mofis_bahn.html"><span class="glyphicon glyphicon-chevron-right"></span> Meldungsseite der KVB anzeigen</a></p>
+      <p><a href="http://www.kvb-koeln.de/german/home/mofis_bus.html"><span class="glyphicon glyphicon-chevron-right"></span> Meldungsseite der KVB anzeigen</a></p>
     </div> <!-- / class=container -->
     <script src="https://code.jquery.com/jquery.min.js"></script>
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
-    <script src="moment.js"></script>
+    <script src="/moment.js"></script>
     <script>
     $(document).ready(function(){
       // load messages
       moment.lang("de");
       var loadData = function() {
-        var url = "messages_bahn.min.json";
+        var url = "/messages_bus.min.json";
         $.getJSON(url, function(data){
           //console.log(data);
           var lastmod = moment(data.last_modified);

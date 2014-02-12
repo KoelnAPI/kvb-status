@@ -5,9 +5,11 @@ Status- und Störungsinformationen von den Kölner Verkehrsbetrieben, Smartphone
 
 Die eigentlichen Nachrichten können mit einem Scraper geladen werden, der unter https://github.com/KoelnAPI/data/tree/master/data/transport/kvb-status bereit steht.
 
-## TODO
+## Ideen
 
-* Bus-Meldungen ausgeben
+* Darstellung attraktiver machen
+* Gestörte Linien in der Liste hervorheben (Farbe aus Netzplan verwenden)
+* Gestörte Strecken/Linien und Position es Nutzers auf der Karte anzeigen
 
 ## English description
 
