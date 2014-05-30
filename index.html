@@ -6,10 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <title>KVB Bahn-Status - Powered by Köln API</title>
     <meta name="description" content="Aktuelle Meldungen von der KVB zum Bahnverkehr, smartphone-freundlich dargestellt.">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
     <style type="text/css">
     body {
       margin-bottom: 20px;
+      font-family: 'Open Sans', sans-serif;
+    }
+    h1 {
+      font-weight: 700;
+      color: #333;
     }
     .nav-pills li {
       background-color: #eee;
@@ -24,6 +30,21 @@
     .panel-body.stationspanel {
       padding-left: 0px;
     }
+    .icon {
+      background-size: 32px 32px;
+      display: inline-block;
+      padding-left: 45px;
+      padding-right: 10px;
+      line-height: 32px;
+      background-repeat: no-repeat;
+      background-position: left center;
+    }
+    .bahnicon {
+      background-image: url(/img/bahn_64.png);
+    }
+    .busicon {
+      background-image: url(/img/bus_64.png);
+    }
     </style>
   </head>
   <body>
@@ -34,8 +55,8 @@
       <p>Ein Service von <a href="http://www.koelnapi.de/">Köln API</a>. Angaben ohne Gewähr. Alle hier gezeigten Meldungen stammen von den Kölner Verkehrsbetrieben. Aktualisierung alle 5 Minuten.</p>
 
       <ul class="nav nav-tabs" style="margin-top: 10px; margin-bottom: 10px">
-        <li class="active"><a href="./">Bahn</a></li>
-        <li><a href="/bus/">Bus</a></li>
+        <li class="active"><a href="./"><span class="icon bahnicon">Bahn</span></a></li>
+        <li><a href="/bus/"><span class="icon busicon">Bus</span></a></li>
       </ul>
 
       <div class="well well-sm"><small>Zuletzt aktualisiert: <span id="lastmod">Wird geladen...</span></small></div>
