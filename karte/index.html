@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="minimal-ui, width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>KVB Bahn-Status Karte - Powered by Köln API</title>
+    <meta name="description" content="Überblick über Störugnsmeldungen der KVB im Bahnverkehr, smartphone-freundlich dargestellt.">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <style type="text/css">
+    html, body, #map {
+        height: 100%;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Open Sans', sans-serif;
+    }
+    h1 {
+      font-weight: 700;
+      color: #333;
+    }
+    .nav-pills li {
+      background-color: #eee;
+    }
+    .table.stationtable td {
+      padding-left: 2px;
+      padding-right: 0px;
+    }
+    .panel-heading.stationspanel {
+      padding-left: 0px;
+    }
+    .panel-body.stationspanel {
+      padding-left: 0px;
+    }
+    .icon {
+      background-size: 32px 32px;
+      display: inline-block;
+      padding-left: 45px;
+      padding-right: 10px;
+      line-height: 32px;
+      background-repeat: no-repeat;
+      background-position: left center;
+    }
+    .bahnicon {
+      background-image: url(/img/bahn_64.png);
+    }
+    .busicon {
+      background-image: url(/img/bus_64.png);
+    }
+    .leaflet-popup-content ul {
+      padding-left: 0;
+    }
+    .leaflet-popup-content li {
+      list-style-type: none;
+      border-top: 1px solid #ccc;
+      padding: 5px 0;
+      margin: 5px 0;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="map"><div>
+
+    <script src="https://code.jquery.com/jquery.min.js"></script>
+    <script src="//cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+    <script>
+    $(document).ready(function(){
+
+      // initialize map
+      var map = L.map('map', {attributionControl: false}).setView([50.93623, 6.97632], 13);
+
+      L.tileLayer('http://{s}.ok.mycdn.de/tiles/v3/{z}/{x}/{y}.png', {
+        attribution: '&copy; Geodaten <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> Mitwirkende',
+        maxZoom: 17
+        }).addTo(map);
+
+      // center map on user's position
+      map.locate({setView: true, maxZoom: 14});
+
+      var disruptionsLayer = L.layerGroup().addTo(map);
+
+      var stationMarkerProps = {
+        weight: 0,
+        fillColor: '#f4129f',
+        fillOpacity: 0.8
+      };
+
+      var segmentProps = {
+        color: '#f4129f',
+        weight: 3
+      };
+
+      /**
+       * disruptions: Disruption messages as in messages_bahn.min.json
+       * lines: lines with station sequence
+       * stations: Official stations
+       * disruptionStations: Mapping from KVB station names to official IDs
+       */
+      function renderDisruptions(disruptions, lines, stations, disruptionStations) {
+        //console.log(disruptions, stations, disruptionStations);
+
+        // first, let's create useful data structures
+        var affectedStations = {};
+
+        // segments betweeen two affected Stations,
+        // keyed by "<first_station_id>-<second_station_id>"
+        var affectedSegments = {};
+
+        // iterate disruption messages
+        $.each(disruptions.messages, function(m, message){
+          // iterate affected stations
+          $.each(message.station_info, function(s, si){
+            if (disruptionStations[si.station]) {
+              var id = disruptionStations[si.station].toString();
+              if (!affectedStations[id]) {
+                affectedStations[id] = [];
+              }
+              affectedStations[id].push(message);
+            }
+          });
+        });
+
+        // iterate lines to collect affected segments
+        $.each(lines, function(lineId, stationSequence){
+          //console.log(lineId, stationSequence);
+          // iterate stations of that line
+          $.each(stationSequence, function(n, stationId){
+            //console.log(n, stationId);
+            if (n > 0 && affectedStations[stationId]) {
+              // this station is affected! (and it's not the first)
+              if (affectedStations[stationSequence[(n - 1)]]) {
+                // BINGO! previous station also affected.
+                // normalise order
+                var keys = new Array();
+                keys.push(parseInt(stationId, 10));
+                keys.push(parseInt(stationSequence[(n - 1)], 10));
+                keys.sort(function(a, b){return a - b});
+                var key = keys[0] + "-" + keys[1];
+                if (!affectedSegments[key]) {
+                  affectedSegments[key] = {
+                    stations: [stationId, stationSequence[(n - 1)]],
+                    lines: []
+                  }
+                }
+                affectedSegments[key].lines.push(lineId);
+              }
+            }
+          });
+        });
+
+        // render affected segments
+        $.each(affectedSegments, function(key, segment){
+          console.log(key, segment);
+          var points = [
+            L.latLng(stations[segment.stations[0]].y, stations[segment.stations[0]].x),
+            L.latLng(stations[segment.stations[1]].y, stations[segment.stations[1]].x)
+          ];
+          var polyline = L.polyline(points, segmentProps).addTo(map);
+          var html;
+        });
+
+        // render affected stations
+        disruptionsLayer.clearLayers();
+        //console.log(affectedStations);
+        $.each(affectedStations, function(id, stationDisruptions){
+          //console.log(id, stationDisruptions);
+          var circle = L.circle([stations[id].y, stations[id].x], 100,
+            stationMarkerProps).addTo(disruptionsLayer);
+          var html = '<p><b>' + stations[id].name + '</b> &ndash; ';
+          if (stationDisruptions.length === 1) {
+            html += stationDisruptions.length + " Meldung";
+          } else {
+            html += stationDisruptions.length + " Meldungen";
+          }
+          html += '</b></p><ul>';
+          $.each(stationDisruptions, function(n, disruption){
+            html += '<li><b>' + disruption.type + ':</b> ' + disruption.text + '</li>';
+          });
+          html += '</ul>';
+          circle.bindPopup(html);
+        }); 
+        
+      }
+
+      // load data
+      $.getJSON("lines.json", function(lines){
+        $.getJSON("stations.json", function(stations){
+          $.getJSON("disruption_stations.min.json", function(disruptionStations){
+            $.getJSON("../messages_bahn.min.json", function(disruptions){
+              renderDisruptions(disruptions, lines, stations, disruptionStations);
+            });
+          });
+        });
+      });
+      
+    });
+    </script>
+  </body>
+</html>
